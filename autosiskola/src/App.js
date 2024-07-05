@@ -23,7 +23,6 @@ function Dragger({category, setTopSchools}) {
   }, [category])
 
   function MapUpdater() {
-    console.log(category)
     map.eachLayer((layer) => {
       if (layer instanceof L.Marker) {
         map.removeLayer(layer);
@@ -74,10 +73,10 @@ function Dragger({category, setTopSchools}) {
             popUpText += `<p style="margin-bottom: 0px; margin-top:0px"><strong style="margin-bottom: 0px; margin-top:0px">Web:</strong> <a href="${feature.properties.web}" target="_blank">${feature.properties.web}</a></p>`;
         }
         if (feature.properties.phone) {
-            popUpText += `<p style="margin-bottom: 0px; margin-top:0px"><strong style="margin-bottom: 0px; margin-top:0px">Phone:</strong> ${feature.properties.phone}</p>`;
+            popUpText += `<p style="margin-bottom: 0px; margin-top:0px"><strong style="margin-bottom: 0px; margin-top:0px">Telefonszám:</strong> ${feature.properties.phone}</p>`;
         }
         if (feature.properties.address) {
-            popUpText += `<p style="margin-bottom: 0px; margin-top:0px"><strong style="margin-bottom: 0px; margin-top:0px">Address:</strong> ${feature.properties.address}</p>`;
+            popUpText += `<p style="margin-bottom: 0px; margin-top:0px"><strong style="margin-bottom: 0px; margin-top:0px">Cím:</strong> ${feature.properties.address}</p>`;
         }
         if (feature.properties.nkhid) {
             popUpText += `<p style="margin-bottom: 0px; margin-top:0px"><strong style="margin-bottom: 0px; margin-top:0px">NKHAzon:</strong> ${feature.properties.nkhid}</p>`;
@@ -128,20 +127,22 @@ if (category.length === 0) {
       schoolsInBounds.push(school);  
     }
     })
-    var maxOverall = 0;
-    var topSchools = schoolsInBounds.map(function(feature) {
-      category.forEach(function(type) {
-          if (feature.properties.overall && feature.properties.overall[type]) {
-              console.log(feature.properties.overall[type])
-              maxOverall = Math.max(maxOverall, feature.properties.overall[type]);
-          }
-      });
-      return {
-          name: feature.properties.name,
+    
+    var topSchools = []
 
-          overall: maxOverall
-      };
-  })
+    for (var i = 0; i < schoolsInBounds.length; i++) {
+      var school = schoolsInBounds[i];
+      for (var j = 0; j < category.length; j++) {
+        if (school.properties.overall && school.properties.overall[category[j]]) {
+          topSchools.push({
+            name: school.properties.name + " " + category[j] + " kategóriában",
+            overall: school.properties.overall[category[j]]
+          })
+        }
+      }
+    }
+
+console.log(topSchools)
 
  topSchools =  topSchools.sort(function(a, b) {
       return b.overall - a.overall;
@@ -178,7 +179,6 @@ export const MainMap = (props) => {
     }));
     
     var mapCenter = mapBounds.getCenter();
-    console.log(mapBounds)
   
 
     return (
@@ -257,12 +257,14 @@ function SchoolTable({topSchools}) {
         </tr>
       </thead>
       <tbody>
-        {topSchools.map((school) => (
-          <tr>
-            <td>{school.name}</td>
-            <td>{school.overall}</td>
-          </tr>
-        ))}
+        {topSchools.map((school) => {
+          return (
+                <tr>
+                  <td>{school.name}</td>
+                  <td>{school.overall}</td>
+                </tr>
+              )
+        })}
       </tbody>
     </table>
     </>
